@@ -20,9 +20,9 @@ pub const DEFAULT_NAME: &str = AES256GCM_NAME;
 pub static ALGORITHM_NAMES: &'static [&'static str] = &[AES128GCM_NAME, AES256GCM_NAME];
 
 pub trait Algorithm {
-    fn generate_key_text(&self) -> String;
-    fn encrypt_data(&self, key_text: &str, input: &[u8]) -> Result<Vec<u8>, CoreError>;
-    fn decrypt_data(&self, key_text: &str, input: &[u8]) -> Result<Vec<u8>, CoreError>;
+    fn generate_key_text(&self) -> Vec<u8>;
+    fn encrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, CoreError>;
+    fn decrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, CoreError>;
 }
 
 
@@ -32,6 +32,21 @@ pub fn select_algorithm(name: &str) -> Result<Box<dyn Algorithm>, CoreError> {
         AES128GCM_NAME => Ok(Box::new(Aes128GcmAlgorithm {})),
         _ => Err(CoreError::InvalidAlgorithm(name.to_owned())),
     }
+}
+
+
+fn parse_hex_key(key: &[u8], out: &mut [u8]) -> Result<(), CoreError> {
+
+    let key_text = std::str::from_utf8(key)
+        .map_err(|_| CoreError::MalformedKey)?;
+
+
+    let clean_key = key_text
+            .replace("-", "")
+            .replace(" ", "");
+
+    hex::decode_to_slice(clean_key, out)
+        .map_err(|_| CoreError::MalformedKey)
 }
 
 

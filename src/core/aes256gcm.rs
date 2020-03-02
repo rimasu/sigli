@@ -2,35 +2,29 @@ use aes_gcm::Aes256Gcm;
 use aes_gcm::aead::{Aead, NewAead, generic_array::GenericArray};
 use rand::{thread_rng, RngCore};
 
-use super::{Algorithm, CoreError, pretty_hex_encode_key_data, generate_256_bit_key_data};
+use super::{Algorithm, CoreError, pretty_hex_encode_key_data, generate_256_bit_key_data, parse_hex_key};
 
 pub struct Aes256GcmAlgorithm {}
 
 impl Aes256GcmAlgorithm {
-    fn create_cipher(key_text: &str) -> Result<Aes256Gcm, CoreError> {
-        let clean_key = key_text
-            .replace("-", "")
-            .replace(" ", "");
-
-        let mut key = [0u8; 32];
-
-        hex::decode_to_slice(clean_key, &mut key)
-            .map_err(|_| CoreError::MalformedKey)?;
-
-        Ok(Aes256Gcm::new(GenericArray::clone_from_slice(&key)))
+    fn create_cipher(key: &[u8]) -> Result<Aes256Gcm, CoreError> {
+        let mut key_data = [0u8; 32];
+        parse_hex_key(key, &mut key_data)?;
+        Ok(Aes256Gcm::new(GenericArray::clone_from_slice(&key_data)))
     }
 }
 
 
 impl Algorithm for Aes256GcmAlgorithm {
-    fn generate_key_text(&self) -> String {
+
+    fn generate_key_text(&self) -> Vec<u8> {
         pretty_hex_encode_key_data(
             generate_256_bit_key_data().as_slice()
-        )
+        ).as_bytes().to_vec()
     }
 
-    fn encrypt_data(&self, key_text: &str, input: &[u8]) -> Result<Vec<u8>, CoreError> {
-        let cipher = Self::create_cipher(&key_text)?;
+    fn encrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, CoreError> {
+        let cipher = Self::create_cipher(&key)?;
         let mut nonce = [0u8; 12];
         thread_rng().fill_bytes(&mut nonce);
 
@@ -48,8 +42,8 @@ impl Algorithm for Aes256GcmAlgorithm {
         Ok(output)
     }
 
-    fn decrypt_data(&self, key_text: &str, input: &[u8]) -> Result<Vec<u8>, CoreError> {
-        let cipher = Self::create_cipher(&key_text)?;
+    fn decrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, CoreError> {
+        let cipher = Self::create_cipher(&key)?;
         let body_len = input.len() - 12;
         let nonce = &input[body_len..];
         let body = &input[..body_len];
