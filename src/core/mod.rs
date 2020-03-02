@@ -1,7 +1,7 @@
 use rand::{thread_rng, RngCore};
 
-mod aes256gcm;
 mod aes128gcm;
+mod aes256gcm;
 
 use aes128gcm::Aes128GcmAlgorithm;
 use aes256gcm::Aes256GcmAlgorithm;
@@ -25,7 +25,6 @@ pub trait Algorithm {
     fn decrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, CoreError>;
 }
 
-
 pub fn select_algorithm(name: &str) -> Result<Box<dyn Algorithm>, CoreError> {
     match name {
         AES256GCM_NAME => Ok(Box::new(Aes256GcmAlgorithm {})),
@@ -34,21 +33,13 @@ pub fn select_algorithm(name: &str) -> Result<Box<dyn Algorithm>, CoreError> {
     }
 }
 
-
 fn parse_hex_key(key: &[u8], out: &mut [u8]) -> Result<(), CoreError> {
+    let key_text = std::str::from_utf8(key).map_err(|_| CoreError::MalformedKey)?;
 
-    let key_text = std::str::from_utf8(key)
-        .map_err(|_| CoreError::MalformedKey)?;
+    let clean_key = key_text.replace("-", "").replace(" ", "");
 
-
-    let clean_key = key_text
-            .replace("-", "")
-            .replace(" ", "");
-
-    hex::decode_to_slice(clean_key, out)
-        .map_err(|_| CoreError::MalformedKey)
+    hex::decode_to_slice(clean_key, out).map_err(|_| CoreError::MalformedKey)
 }
-
 
 fn generate_256_bit_key_data() -> Vec<u8> {
     let mut key_data = [0u8; 32];
@@ -61,7 +52,6 @@ fn generate_128_bit_key_data() -> Vec<u8> {
     thread_rng().fill_bytes(&mut key_data);
     key_data.to_vec()
 }
-
 
 fn pretty_hex_encode_key_data(key_data: &[u8]) -> String {
     let mut key_text = String::new();
@@ -79,7 +69,6 @@ fn pretty_hex_encode_key_data(key_data: &[u8]) -> String {
 
     key_text
 }
-
 
 #[cfg(test)]
 mod test {

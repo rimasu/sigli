@@ -1,12 +1,9 @@
-#[macro_use]
-extern crate serde;
-
 mod core;
 
+use crate::core::{select_algorithm, CoreError};
 use clap::{App, Arg, ArgMatches, SubCommand};
-use crate::core::{select_algorithm, Algorithm, CoreError};
 use std::fs::File;
-use std::io::{Write, Read};
+use std::io::{Read, Write};
 
 #[derive(Debug)]
 pub enum CliError {
@@ -36,8 +33,8 @@ const OUTPUT_ARG: &'static str = "output";
 const KEY_FILE_ARG: &'static str = "keyfile";
 
 fn read_file(file_name: &str) -> Result<Vec<u8>, CliError> {
-    let mut file = File::open(file_name)
-        .map_err(|e| CliError::CouldNotOpenFile(format!("{}", e)))?;
+    let mut file =
+        File::open(file_name).map_err(|e| CliError::CouldNotOpenFile(format!("{}", e)))?;
 
     let mut data = Vec::new();
     file.read_to_end(&mut data)
@@ -48,7 +45,8 @@ fn read_file(file_name: &str) -> Result<Vec<u8>, CliError> {
 
 fn read_stdin() -> Result<Vec<u8>, CliError> {
     let mut buf = Vec::new();
-    std::io::stdin().read_to_end(&mut buf)
+    std::io::stdin()
+        .read_to_end(&mut buf)
         .map_err(|e| CliError::BadInput(format!("{}", e)))?;
 
     Ok(buf)
@@ -68,14 +66,15 @@ fn read_key_data(cmd: &ArgMatches) -> Result<Vec<u8>, CliError> {
 }
 
 fn write_stdout(data: &[u8]) -> Result<(), CliError> {
-    std::io::stdout().write_all(&data)
+    std::io::stdout()
+        .write_all(&data)
         .map_err(|e| CliError::BadInput(format!("{}", e)))?;
     Ok(())
 }
 
 fn write_file(file_name: &str, data: &[u8]) -> Result<(), CliError> {
-    let mut file = File::create(file_name)
-        .map_err(|e| CliError::CouldNotCreateFile(format!("{}", e)))?;
+    let mut file =
+        File::create(file_name).map_err(|e| CliError::CouldNotCreateFile(format!("{}", e)))?;
 
     file.write_all(data)
         .map_err(|e| CliError::BadInput(format!("{}", e)))?;
@@ -177,9 +176,7 @@ fn body() -> Result<(), CliError> {
                 .help("Output file containing plain text. If absent output is written to stdout."))
         ).get_matches();
 
-    let algo_name = matches
-        .value_of(ALGO_ARG)
-        .unwrap_or(core::DEFAULT_NAME);
+    let algo_name = matches.value_of(ALGO_ARG).unwrap_or(core::DEFAULT_NAME);
 
     let algo = select_algorithm(algo_name)?;
 
