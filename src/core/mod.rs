@@ -5,6 +5,7 @@ mod aes256gcm;
 
 use aes128gcm::Aes128GcmAlgorithm;
 use aes256gcm::Aes256GcmAlgorithm;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub enum CoreError {
@@ -14,10 +15,27 @@ pub enum CoreError {
     InvalidAlgorithm(String),
 }
 
-const AES256GCM_NAME: &str = "aes256gcm";
-const AES128GCM_NAME: &str = "aes128gcm";
+pub const AES256GCM_NAME: &str = "aes256gcm";
+pub const AES128GCM_NAME: &str = "aes128gcm";
 pub const DEFAULT_NAME: &str = AES256GCM_NAME;
 pub static ALGORITHM_NAMES: &'static [&'static str] = &[AES128GCM_NAME, AES256GCM_NAME];
+
+pub enum AlgoType {
+    Aes128Gcm,
+    Aes256Gcm,
+}
+
+impl FromStr for AlgoType {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            AES128GCM_NAME => Ok(AlgoType::Aes128Gcm),
+            AES256GCM_NAME => Ok(AlgoType::Aes256Gcm),
+            _ => Err("no match"),
+        }
+    }
+}
+
 
 pub trait Algorithm {
     fn generate_key_text(&self) -> Vec<u8>;
@@ -25,11 +43,10 @@ pub trait Algorithm {
     fn decrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, CoreError>;
 }
 
-pub fn select_algorithm(name: &str) -> Result<Box<dyn Algorithm>, CoreError> {
+pub fn select_algorithm(name: AlgoType) -> Result<Box<dyn Algorithm>, CoreError> {
     match name {
-        AES256GCM_NAME => Ok(Box::new(Aes256GcmAlgorithm {})),
-        AES128GCM_NAME => Ok(Box::new(Aes128GcmAlgorithm {})),
-        _ => Err(CoreError::InvalidAlgorithm(name.to_owned())),
+        AlgoType::Aes256Gcm => Ok(Box::new(Aes256GcmAlgorithm {})),
+        AlgoType::Aes128Gcm => Ok(Box::new(Aes128GcmAlgorithm {})),
     }
 }
 

@@ -1,9 +1,10 @@
 mod core;
 
-use crate::core::{select_algorithm, CoreError};
-use clap::{App, Arg, ArgMatches, SubCommand};
+use crate::core::{select_algorithm, CoreError, ALGORITHM_NAMES, AlgoType, DEFAULT_NAME};
+use clap::{value_t, App, Arg, ArgMatches, SubCommand};
 use std::fs::File;
 use std::io::{Read, Write};
+
 
 #[derive(Debug)]
 pub enum CliError {
@@ -94,20 +95,16 @@ fn body() -> Result<(), CliError> {
         .version(VERSION)
         .author("Richard Sunderland <richard@sunderlandfamily.info>")
         .about("Encrypt and decrypt short messages")
-
+        .arg(Arg::with_name(ALGO_ARG)
+            .long("--algo")
+            .short("a")
+            .value_name("ALGORITHM_NAME")
+            .possible_values(ALGORITHM_NAMES)
+            .default_value(DEFAULT_NAME)
+            .help(&format!("Name of algorithm."))
+        )
         .subcommand(SubCommand::with_name(GEN_KEY_CMD)
             .about("generate new key")
-            .arg(Arg::with_name(ALGO_ARG)
-                .long("--algo")
-                .short("a")
-                .value_name("ALGORITHM_NAME")
-                .takes_value(true)
-                .help(&format!("Name of algorithm. Defaults to {}. Options are {}",
-                               core::DEFAULT_NAME,
-                               core::ALGORITHM_NAMES
-                                   .join(", ")
-                ))
-            )
             .arg(Arg::with_name(OUTPUT_ARG)
                 .long("--output")
                 .short("o")
@@ -121,17 +118,7 @@ fn body() -> Result<(), CliError> {
                 .value_name("KEY_FILE")
                 .required(true)
                 .help("File containing key data"))
-            .arg(Arg::with_name(ALGO_ARG)
-                .long("--algo")
-                .short("a")
-                .value_name("ALGORITHM_NAME")
-                .takes_value(true)
-                .help(&format!("Name of algorithm. Defaults to {}. Options are {}",
-                               core::DEFAULT_NAME,
-                               core::ALGORITHM_NAMES
-                                   .join(", ")
-                ))
-            )
+
             .arg(Arg::with_name(INPUT_ARG)
                 .long("--input")
                 .short("i")
@@ -151,17 +138,6 @@ fn body() -> Result<(), CliError> {
                 .value_name("KEY_FILE")
                 .required(true)
                 .help("File containing key data"))
-            .arg(Arg::with_name(ALGO_ARG)
-                .long("--algo")
-                .short("a")
-                .value_name("ALGORITHM_NAME")
-                .takes_value(true)
-                .help(&format!("Name of algorithm. Defaults to {}. Options are {}",
-                               core::DEFAULT_NAME,
-                               core::ALGORITHM_NAMES
-                                   .join(", ")
-                ))
-            )
             .arg(Arg::with_name(INPUT_ARG)
                 .long("--input")
                 .short("i")
@@ -176,9 +152,9 @@ fn body() -> Result<(), CliError> {
                 .help("Output file containing plain text. If absent output is written to stdout."))
         ).get_matches();
 
-    let algo_name = matches.value_of(ALGO_ARG).unwrap_or(core::DEFAULT_NAME);
 
-    let algo = select_algorithm(algo_name)?;
+    let algo_type = value_t!(matches.value_of(ALGO_ARG), AlgoType).unwrap();
+    let algo = select_algorithm(algo_type)?;
 
     match matches.subcommand() {
         (ENCRYPT_CMD, Some(cmd_matches)) => {
