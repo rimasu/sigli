@@ -12,3 +12,5 @@ clap = "2.33.0"
 rand = "0.7.3"
 hex = "0.4.2"
 aes-gcm = "0.3.2"
+convert-base = "1.1.0"
+

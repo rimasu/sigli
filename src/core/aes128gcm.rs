@@ -3,7 +3,7 @@ use aes_gcm::Aes128Gcm;
 use rand::{thread_rng, RngCore};
 
 use super::{
-    generate_128_bit_key_data, parse_hex_key, pretty_hex_encode_key_data, Algorithm, CoreError,
+    generate_128_bit_key_data, Algorithm, CoreError,
 };
 
 pub struct Aes128GcmAlgorithm {}
@@ -11,16 +11,14 @@ pub struct Aes128GcmAlgorithm {}
 impl Aes128GcmAlgorithm {
     fn create_cipher(key: &[u8]) -> Result<Aes128Gcm, CoreError> {
         let mut key_data = [0u8; 16];
-        parse_hex_key(key, &mut key_data)?;
+        key_data.copy_from_slice(key);
         Ok(Aes128Gcm::new(GenericArray::clone_from_slice(&key_data)))
     }
 }
 
 impl Algorithm for Aes128GcmAlgorithm {
-    fn generate_key_text(&self) -> Vec<u8> {
-        pretty_hex_encode_key_data(generate_128_bit_key_data().as_slice())
-            .as_bytes()
-            .to_vec()
+    fn generate_key_data(&self) -> Vec<u8> {
+        generate_128_bit_key_data()
     }
 
     fn encrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, CoreError> {
