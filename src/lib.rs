@@ -5,6 +5,7 @@ use crate::core::select_algorithm;
 use crate::format::select_format;
 
 pub use crate::core::{AlgoType, CoreError, ALGORITHM_NAMES, DEFAULT_ALGO_NAME};
+
 pub use crate::format::{FormatType, FormatError,
                         ALL_FORMAT_NAMES,
                         KEY_FORMAT_NAMES,
@@ -13,33 +14,27 @@ pub use crate::format::{FormatType, FormatError,
                         DEFAULT_CIPHER_FORMAT, };
 
 #[derive(Debug)]
-pub enum CliError {
+pub enum SigliError {
     Core(CoreError),
     Format(FormatError),
-    CouldNotCreateFile(String),
-    CouldNotOpenFile(String),
-    CouldNotReadFile(String),
-    BadInput(String),
-    BadOutput(String),
-    NoCommand,
 }
 
-impl std::convert::From<CoreError> for CliError {
+impl std::convert::From<CoreError> for SigliError {
     fn from(e: CoreError) -> Self {
-        CliError::Core(e)
+        SigliError::Core(e)
     }
 }
 
-impl std::convert::From<FormatError> for CliError {
+impl std::convert::From<FormatError> for SigliError {
     fn from(e: FormatError) -> Self {
-        CliError::Format(e)
+        SigliError::Format(e)
     }
 }
 
 pub fn generate_key(
     algo_type: AlgoType,
     key_format: FormatType,
-) -> Result<Vec<u8>, CliError>
+) -> Result<Vec<u8>, SigliError>
 {
     let key = select_algorithm(algo_type)
         .map(|a| a.generate_key_data())?;
@@ -58,7 +53,7 @@ pub fn encrypt(
     output_format: FormatType,
     raw_key: &[u8],
     raw_input: &[u8],
-) -> Result<Vec<u8>, CliError>
+) -> Result<Vec<u8>, SigliError>
 {
     let key = select_format(key_format)
         .and_then(|f| f.unpack(raw_key))?;
@@ -82,7 +77,7 @@ pub fn decrypt(
     output_format: FormatType,
     raw_key: &[u8],
     raw_input: &[u8],
-) -> Result<Vec<u8>, CliError>
+) -> Result<Vec<u8>, SigliError>
 {
     let key = select_format(key_format)
         .and_then(|f| f.unpack(raw_key))?;

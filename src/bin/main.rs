@@ -1,12 +1,13 @@
 use clap::{value_t, App, Arg, ArgMatches, SubCommand};
 use std::fs::File;
 use std::io::{Read, Write};
+use std::io;
 
 use sigli::{
     generate_key,
     encrypt,
     decrypt,
-    CliError,
+    SigliError,
     AlgoType,
     FormatType,
     ALL_FORMAT_NAMES,
@@ -32,23 +33,34 @@ const KEY_FORMAT_ARG: &'static str = "keyformat";
 const INPUT_FORMAT_ARG: &'static str = "inputformat";
 const OUTPUT_FORMAT_ARG: &'static str = "outputformat";
 
+#[derive(Debug)]
+enum CliError {
+    SigliError(SigliError),
+    NoCommand,
+    Io(io::Error),
+
+}
+
+impl std::convert::From<SigliError> for CliError {
+    fn from(e: SigliError) -> Self {  CliError::SigliError(e) }
+}
+
+impl std::convert::From<io::Error> for CliError {
+    fn from(e: io::Error) -> Self {  CliError::Io(e) }
+}
+
 fn read_file(file_name: &str) -> Result<Vec<u8>, CliError> {
-    let mut file =
-        File::open(file_name).map_err(|e| CliError::CouldNotOpenFile(format!("{}", e)))?;
+    let mut file = File::open(file_name)?;
 
     let mut data = Vec::new();
-    file.read_to_end(&mut data)
-        .map_err(|e| CliError::CouldNotReadFile(format!("{}", e)))?;
+    file.read_to_end(&mut data)?;
 
     Ok(data)
 }
 
 fn read_stdin() -> Result<Vec<u8>, CliError> {
     let mut buf = Vec::new();
-    std::io::stdin()
-        .read_to_end(&mut buf)
-        .map_err(|e| CliError::BadInput(format!("{}", e)))?;
-
+    std::io::stdin().read_to_end(&mut buf)?;
     Ok(buf)
 }
 
@@ -66,18 +78,13 @@ fn read_key_data(c: &ArgMatches) -> Result<Vec<u8>, CliError> {
 }
 
 fn write_stdout(data: &[u8]) -> Result<(), CliError> {
-    std::io::stdout()
-        .write_all(&data)
-        .map_err(|e| CliError::BadInput(format!("{}", e)))?;
+    std::io::stdout().write_all(&data)?;
     Ok(())
 }
 
 fn write_file(file_name: &str, data: &[u8]) -> Result<(), CliError> {
-    let mut file =
-        File::create(file_name).map_err(|e| CliError::CouldNotCreateFile(format!("{}", e)))?;
-
-    file.write_all(data)
-        .map_err(|e| CliError::BadInput(format!("{}", e)))?;
+    let mut file = File::create(file_name)?;
+    file.write_all(data)?;
     Ok(())
 }
 
