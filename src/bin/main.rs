@@ -9,18 +9,18 @@ use sigli::{
     DEFAULT_PLAIN_FORMAT, KEY_FORMAT_NAMES,
 };
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const VERSION: &    str = env!("CARGO_PKG_VERSION");
 
-const GEN_KEY_CMD: &'static str = "genkey";
-const ENCRYPT_CMD: &'static str = "encrypt";
-const DECRYPT_CMD: &'static str = "decrypt";
-const ALGO_ARG: &'static str = "algo";
-const INPUT_ARG: &'static str = "input";
-const OUTPUT_ARG: &'static str = "output";
-const KEY_FILE_ARG: &'static str = "keyfile";
-const KEY_FORMAT_ARG: &'static str = "keyformat";
-const INPUT_FORMAT_ARG: &'static str = "inputformat";
-const OUTPUT_FORMAT_ARG: &'static str = "outputformat";
+const GEN_KEY_CMD: &str = "genkey";
+const ENCRYPT_CMD: &str = "encrypt";
+const DECRYPT_CMD: &str = "decrypt";
+const ALGO_ARG: &str = "algo";
+const INPUT_ARG: &str = "input";
+const OUTPUT_ARG: &str = "output";
+const KEY_FILE_ARG: &str = "keyfile";
+const KEY_FORMAT_ARG: &str = "keyformat";
+const INPUT_FORMAT_ARG: &str = "inputformat";
+const OUTPUT_FORMAT_ARG: & str = "outputformat";
 
 #[derive(Debug)]
 enum CliError {
@@ -99,7 +99,7 @@ fn body() -> Result<(), CliError> {
             .value_name("ALGORITHM_NAME")
             .possible_values(ALGORITHM_NAMES)
             .default_value(DEFAULT_ALGO_NAME)
-            .help(&format!("Name of algorithm."))
+            .help("Name of algorithm.")
         )
         .arg(Arg::with_name(KEY_FORMAT_ARG)
             .long("--key-format")
@@ -107,7 +107,7 @@ fn body() -> Result<(), CliError> {
             .value_name("FORMAT_NAME")
             .possible_values(KEY_FORMAT_NAMES)
             .default_value(DEFAULT_KEY_FORMAT)
-            .help(&format!("Name of format."))
+            .help("Name of format.")
         )
         .subcommand(SubCommand::with_name(GEN_KEY_CMD)
             .about("generate new key")
@@ -137,7 +137,7 @@ fn body() -> Result<(), CliError> {
                 .value_name("FORMAT_NAME")
                 .possible_values(ALL_FORMAT_NAMES)
                 .default_value(DEFAULT_PLAIN_FORMAT)
-                .help(&format!("Plain text format."))
+                .help("Plain text format.")
             )
             .arg(Arg::with_name(OUTPUT_ARG)
                 .long("--output")
@@ -151,7 +151,7 @@ fn body() -> Result<(), CliError> {
                 .value_name("FORMAT_NAME")
                 .possible_values(ALL_FORMAT_NAMES)
                 .default_value(DEFAULT_CIPHER_FORMAT)
-                .help(&format!("Cipher text format."))
+                .help("Cipher text format.")
             )
         )
         .subcommand(SubCommand::with_name(DECRYPT_CMD)
@@ -172,7 +172,7 @@ fn body() -> Result<(), CliError> {
                 .value_name("FORMAT_NAME")
                 .possible_values(ALL_FORMAT_NAMES)
                 .default_value(DEFAULT_CIPHER_FORMAT)
-                .help(&format!("Cipher text format."))
+                .help("Cipher text format.")
             )
             .arg(Arg::with_name(OUTPUT_ARG)
                 .long("--output")
@@ -186,7 +186,7 @@ fn body() -> Result<(), CliError> {
                 .value_name("FORMAT_NAME")
                 .possible_values(ALL_FORMAT_NAMES)
                 .default_value(DEFAULT_PLAIN_FORMAT)
-                .help(&format!("Plain text format."))
+                .help("Plain text format.")
             )
         ).get_matches();
 

@@ -15,7 +15,7 @@ impl Format for HexFormat {
             }
         }
 
-        if key_text.chars().last() == Some('-') {
+        if key_text.ends_with('-') {
             key_text.remove(key_text.len() - 1);
         }
 

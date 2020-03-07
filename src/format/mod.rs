@@ -9,7 +9,7 @@ pub const DEFAULT_KEY_FORMAT: &str = self::hex::FORMAT_NAME;
 pub const DEFAULT_PLAIN_FORMAT: &str = self::plain1::FORMAT_NAME;
 pub const DEFAULT_CIPHER_FORMAT: &str = self::signal::FORMAT_NAME;
 
-pub static ALL_FORMAT_NAMES: &'static [&'static str] = &[
+pub static ALL_FORMAT_NAMES: &[&str] = &[
     self::plain1::FORMAT_NAME,
     self::hex::FORMAT_NAME,
     self::signal::FORMAT_NAME,
@@ -18,7 +18,7 @@ pub static ALL_FORMAT_NAMES: &'static [&'static str] = &[
 
 // Key format names does not include PLAIN1 because it has meaningful whitespace
 // and is therefore not a robust way of passing keys around.
-pub static KEY_FORMAT_NAMES: &'static [&'static str] = &[
+pub static KEY_FORMAT_NAMES: &[&str] = &[
     self::plain1::FORMAT_NAME,
     self::hex::FORMAT_NAME,
     self::signal::FORMAT_NAME,
