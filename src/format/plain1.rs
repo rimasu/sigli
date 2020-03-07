@@ -9,18 +9,18 @@ pub const FORMAT_NAME: &str = "plain1";
 static PLAIN_ALPHABET: &str = "abcdefghijklmnopqrstuvwxyz09123456789 ,.";
 
 impl Format for Plain1Format {
-    fn pack(&self, input: &[u8]) -> Vec<u8> {
+    fn pack(&self, output: &mut Vec<u8>) {
         let mut lookup = HashMap::new();
         for (idx, c) in PLAIN_ALPHABET.chars().enumerate() {
-            lookup.insert(idx as u8, c);
+            lookup.insert(idx as u8, c as u32 as u8);
         }
 
         let mut convert = Convert::new(256, PLAIN_ALPHABET.len() as u64);
-        let mut output = String::new();
-        for point in convert.convert::<u8, u8>(input) {
+        let buf = convert.convert::<u8, u8>(output);
+        output.clear();
+        for point in buf {
             output.push(*lookup.get(&point).unwrap())
         }
-        output.as_bytes().to_vec()
     }
 
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
@@ -69,9 +69,9 @@ mod test {
 
     #[test]
     fn can_pack_any_byte() {
-        let raw = all_bytes_unpacked();
-        let packed = Plain1Format {}.pack(&raw);
-        assert_eq!(all_letters_packed(), packed);
+        let mut output = all_bytes_unpacked();
+        Plain1Format {}.pack(&mut raw);
+        assert_eq!(all_letters_packed(), output);
     }
 
     #[test]

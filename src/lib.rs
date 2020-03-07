@@ -30,11 +30,11 @@ impl std::convert::From<FormatError> for SigliError {
 }
 
 pub fn generate_key(algo_type: AlgoType, key_format: FormatType) -> Result<Vec<u8>, SigliError> {
-    let key = select_algorithm(algo_type).map(|a| a.generate_key_data())?;
+    let mut key = select_algorithm(algo_type).map(|a| a.generate_key_data())?;
 
-    let raw_key = select_format(key_format).map(|f| f.pack(&key))?;
+    select_format(key_format).map(|f| f.pack(&mut key))?;
 
-    Ok(raw_key)
+    Ok(key)
 }
 
 pub fn encrypt(
@@ -49,11 +49,11 @@ pub fn encrypt(
 
     let input = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
 
-    let output = select_algorithm(algo_type).and_then(|a| a.encrypt_data(&key, &input))?;
+    let mut output = select_algorithm(algo_type).and_then(|a| a.encrypt_data(&key, &input))?;
 
-    let raw_output = select_format(output_format).map(|f| f.pack(&output))?;
+    select_format(output_format).map(|f| f.pack(&mut output))?;
 
-    Ok(raw_output)
+    Ok(output)
 }
 
 pub fn decrypt(
@@ -68,9 +68,10 @@ pub fn decrypt(
 
     let input = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
 
-    let output = select_algorithm(algo_type).and_then(|a| a.decrypt_data(&key, &input))?;
+    let mut output = select_algorithm(algo_type).and_then(|a| a.decrypt_data(&key, &input))?;
 
-    let raw_output = select_format(output_format).map(|f| f.pack(&output))?;
+    select_format(output_format).map(|f| f.pack(&mut output))?;
 
-    Ok(raw_output)
+    Ok(output)
 }
+

@@ -51,7 +51,7 @@ pub enum FormatError {
 }
 
 pub trait Format {
-    fn pack(&self, input: &[u8]) -> Vec<u8>;
+    fn pack(&self, output: &mut Vec<u8>);
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError>;
 }
 

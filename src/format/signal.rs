@@ -7,10 +7,12 @@ pub struct SignalFormat {}
 pub const FORMAT_NAME: &str = "signal";
 
 impl Format for SignalFormat {
-    fn pack(&self, input: &[u8]) -> Vec<u8> {
+    fn pack(&self, output: &mut Vec<u8>) {
         let mut convert = Convert::new(256, 26);
-        let mut output = Vec::new();
-        for (idx, point) in convert.convert::<u8, u8>(input).iter().enumerate() {
+        let buf = convert.convert::<u8, u8>(output);
+
+        output.clear();
+        for (idx, point) in buf.iter().enumerate() {
             if idx != 0 {
                 if idx % 30 == 0 {
                     // output.push(13);
@@ -22,7 +24,6 @@ impl Format for SignalFormat {
             output.push(point + 65);
         }
         output.push(10);
-        output
     }
 
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
@@ -73,9 +74,9 @@ mod test {
 
     #[test]
     fn can_pack_any_byte() {
-        let raw = all_bytes_unpacked();
-        let packed = SignalFormat {}.pack(&raw);
-        assert_eq!(all_bytes_packed(), packed);
+        let mut output = all_bytes_unpacked();
+        SignalFormat {}.pack(&mut output);
+        assert_eq!(all_bytes_packed(), output);
     }
 
     #[test]
