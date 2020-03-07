@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 pub const AES256GCM_NAME: &str = "aes256gcm";
 pub const AES128GCM_NAME: &str = "aes128gcm";
-pub const DEFAULT_NAME: &str = AES256GCM_NAME;
+pub const DEFAULT_ALGO_NAME: &str = AES256GCM_NAME;
 pub static ALGORITHM_NAMES: &'static [&'static str] = &[AES128GCM_NAME, AES256GCM_NAME];
 
 pub enum AlgoType {

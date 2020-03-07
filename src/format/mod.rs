@@ -11,12 +11,19 @@ use raw::RawFormat;
 use std::str::FromStr;
 
 
-pub const PLAIN1_NAME: &str = "plain1";
-pub const HEX_NAME: &str = "hex";
-pub const SIGNAL_NAME: &str = "signal";
-pub const RAW_NAME: &str = "raw";
+const PLAIN1_NAME: &str = "plain1";
+const HEX_NAME: &str = "hex";
+const SIGNAL_NAME: &str = "signal";
+const RAW_NAME: &str = "raw";
 
-pub static FORMAT_NAMES: &'static [&'static str] = &[PLAIN1_NAME, HEX_NAME, SIGNAL_NAME, RAW_NAME];
+pub const DEFAULT_KEY_FORMAT: &str = HEX_NAME;
+pub const DEFAULT_PLAIN_FORMAT: &str = PLAIN1_NAME;
+pub const DEFAULT_CIPHER_FORMAT: &str = SIGNAL_NAME;
+
+pub static ALL_FORMAT_NAMES: &'static [&'static str] = &[PLAIN1_NAME, HEX_NAME, SIGNAL_NAME, RAW_NAME];
+
+// Key format names does not include PLAIN1 because it has meaningful whitespace
+// and is therefore not a robust way of passing keys around.
 pub static KEY_FORMAT_NAMES: &'static [&'static str] = &[HEX_NAME, SIGNAL_NAME, RAW_NAME];
 
 pub enum FormatType {
@@ -45,7 +52,7 @@ pub enum FormatError {
 }
 
 pub trait Format {
-    fn pack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError>;
+    fn pack(&self, input: &[u8]) -> Vec<u8>;
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError>;
 }
 

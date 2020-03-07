@@ -3,7 +3,7 @@ use super::{Format, FormatError};
 pub struct HexFormat {}
 
 impl Format for HexFormat {
-    fn pack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
+    fn pack(&self, input: &[u8]) -> Vec<u8> {
         let mut key_text = String::new();
 
         for (idx, c) in hex::encode_upper(input).chars().enumerate() {
@@ -19,7 +19,7 @@ impl Format for HexFormat {
 
         key_text.push('\n');
 
-        Ok(key_text.as_bytes().to_vec())
+        key_text.as_bytes().to_vec()
     }
 
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
@@ -31,7 +31,7 @@ impl Format for HexFormat {
             if c.is_ascii_hexdigit() {
                 clean_text.push(c)
             } else if c != '-' && !c.is_whitespace() {
-                return Err(FormatError::MalformedInput)
+                return Err(FormatError::MalformedInput);
             }
         }
 
@@ -48,7 +48,7 @@ mod test {
     #[test]
     fn can_pack_hex_input() {
         let raw = vec![0xAB, 0x01, 0x02, 0x22, 0x23, 0x43];
-        let packed = HexFormat {}.pack(&raw).unwrap();
+        let packed = HexFormat {}.pack(&raw);
         assert_eq!("AB01-0222-2343\n".as_bytes().to_vec(), packed);
     }
 

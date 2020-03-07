@@ -1,35 +1,23 @@
-mod core;
-mod format;
-
-use crate::core::{select_algorithm, CoreError, ALGORITHM_NAMES, AlgoType, DEFAULT_NAME};
 use clap::{value_t, App, Arg, ArgMatches, SubCommand};
 use std::fs::File;
 use std::io::{Read, Write};
-use crate::format::{FORMAT_NAMES, HEX_NAME, select_format, FormatError, FormatType, KEY_FORMAT_NAMES, PLAIN1_NAME, SIGNAL_NAME, Format};
 
-#[derive(Debug)]
-pub enum CliError {
-    Core(CoreError),
-    Format(FormatError),
-    CouldNotCreateFile(String),
-    CouldNotOpenFile(String),
-    CouldNotReadFile(String),
-    BadInput(String),
-    BadOutput(String),
-    NoCommand,
-}
+use sigli::{
+    generate_key,
+    encrypt,
+    decrypt,
+    CliError,
+    AlgoType,
+    FormatType,
+    ALL_FORMAT_NAMES,
+    KEY_FORMAT_NAMES,
+    DEFAULT_KEY_FORMAT,
+    DEFAULT_PLAIN_FORMAT,
+    DEFAULT_CIPHER_FORMAT,
+    ALGORITHM_NAMES,
+    DEFAULT_ALGO_NAME
+};
 
-impl std::convert::From<CoreError> for CliError {
-    fn from(e: CoreError) -> Self {
-        CliError::Core(e)
-    }
-}
-
-impl std::convert::From<FormatError> for CliError {
-    fn from(e: FormatError) -> Self {
-        CliError::Format(e)
-    }
-}
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -64,20 +52,16 @@ fn read_stdin() -> Result<Vec<u8>, CliError> {
     Ok(buf)
 }
 
-fn read_input(cmd_matches: &ArgMatches) -> Result<Vec<u8>, CliError> {
-    let raw = if let Some(file_name) = cmd_matches.value_of(INPUT_ARG) {
+fn read_input(c: &ArgMatches) -> Result<Vec<u8>, CliError> {
+    if let Some(file_name) = c.value_of(INPUT_ARG) {
         read_file(file_name)
     } else {
         read_stdin()
-    }?;
-
-    let format = read_format(cmd_matches, INPUT_FORMAT_ARG)?;
-    let unpacked = format.unpack(&raw)?;
-    Ok(unpacked)
+    }
 }
 
-fn read_key_data(cmd: &ArgMatches) -> Result<Vec<u8>, CliError> {
-    let file_name = cmd.value_of(KEY_FILE_ARG).unwrap();
+fn read_key_data(c: &ArgMatches) -> Result<Vec<u8>, CliError> {
+    let file_name = c.value_of(KEY_FILE_ARG).unwrap();
     read_file(file_name)
 }
 
@@ -97,16 +81,17 @@ fn write_file(file_name: &str, data: &[u8]) -> Result<(), CliError> {
     Ok(())
 }
 
-fn write_output(cmd_matches: &ArgMatches, data: &[u8]) -> Result<(), CliError> {
-    if let Some(file_name) = cmd_matches.value_of(OUTPUT_ARG) {
+fn write_output(c: &ArgMatches, data: &[u8]) -> Result<(), CliError> {
+    if let Some(file_name) = c.value_of(OUTPUT_ARG) {
         write_file(file_name, &data)
     } else {
         write_stdout(&data)
     }
 }
 
+
 fn body() -> Result<(), CliError> {
-    let matches = App::new("Cipher CLI")
+    let m = App::new("Cipher CLI")
         .version(VERSION)
         .author("Richard Sunderland <richard@sunderlandfamily.info>")
         .about("Encrypt and decrypt short messages")
@@ -115,7 +100,7 @@ fn body() -> Result<(), CliError> {
             .short("a")
             .value_name("ALGORITHM_NAME")
             .possible_values(ALGORITHM_NAMES)
-            .default_value(DEFAULT_NAME)
+            .default_value(DEFAULT_ALGO_NAME)
             .help(&format!("Name of algorithm."))
         )
         .arg(Arg::with_name(KEY_FORMAT_ARG)
@@ -123,7 +108,7 @@ fn body() -> Result<(), CliError> {
             .short("K")
             .value_name("FORMAT_NAME")
             .possible_values(KEY_FORMAT_NAMES)
-            .default_value(HEX_NAME)
+            .default_value(DEFAULT_KEY_FORMAT)
             .help(&format!("Name of format."))
         )
         .subcommand(SubCommand::with_name(GEN_KEY_CMD)
@@ -152,8 +137,8 @@ fn body() -> Result<(), CliError> {
                 .long("--input-format")
                 .short("I")
                 .value_name("FORMAT_NAME")
-                .possible_values(FORMAT_NAMES)
-                .default_value(PLAIN1_NAME)
+                .possible_values(ALL_FORMAT_NAMES)
+                .default_value(DEFAULT_PLAIN_FORMAT)
                 .help(&format!("Plain text format."))
             )
             .arg(Arg::with_name(OUTPUT_ARG)
@@ -166,8 +151,8 @@ fn body() -> Result<(), CliError> {
                 .long("--output-format")
                 .short("O")
                 .value_name("FORMAT_NAME")
-                .possible_values(FORMAT_NAMES)
-                .default_value(SIGNAL_NAME)
+                .possible_values(ALL_FORMAT_NAMES)
+                .default_value(DEFAULT_CIPHER_FORMAT)
                 .help(&format!("Cipher text format."))
             )
         )
@@ -187,8 +172,8 @@ fn body() -> Result<(), CliError> {
                 .long("--input-format")
                 .short("I")
                 .value_name("FORMAT_NAME")
-                .possible_values(FORMAT_NAMES)
-                .default_value(SIGNAL_NAME)
+                .possible_values(ALL_FORMAT_NAMES)
+                .default_value(DEFAULT_CIPHER_FORMAT)
                 .help(&format!("Cipher text format."))
             )
             .arg(Arg::with_name(OUTPUT_ARG)
@@ -201,43 +186,52 @@ fn body() -> Result<(), CliError> {
                 .long("--output-format")
                 .short("O")
                 .value_name("FORMAT_NAME")
-                .possible_values(FORMAT_NAMES)
-                .default_value(PLAIN1_NAME)
+                .possible_values(ALL_FORMAT_NAMES)
+                .default_value(DEFAULT_PLAIN_FORMAT)
                 .help(&format!("Plain text format."))
             )
         ).get_matches();
 
 
-    let algo_type = value_t!(matches.value_of(ALGO_ARG), AlgoType).unwrap();
-    let algo = select_algorithm(algo_type)?;
+    let algo_type = value_t!(m.value_of(ALGO_ARG), AlgoType).unwrap();
+    let key_format = value_t!(m.value_of(KEY_FORMAT_ARG), FormatType).unwrap();
 
-    let key_format = read_format(&matches, KEY_FORMAT_ARG)?;
-
-    match matches.subcommand() {
-        (ENCRYPT_CMD, Some(cmd_matches)) => {
-            let input = read_input(cmd_matches)?;
-            let key_data = read_key_data(cmd_matches)?;
-            let key_data = key_format.unpack(&key_data)?;
-            let output = algo.encrypt_data(&key_data, &input)?;
-            let output_format = read_format(cmd_matches, OUTPUT_FORMAT_ARG)?;
-            let output = output_format.pack(&output)?;
-            write_output(cmd_matches, &output)
+    match m.subcommand() {
+        (ENCRYPT_CMD, Some(c)) => {
+            let input_format = value_t!(c.value_of(INPUT_FORMAT_ARG), FormatType).unwrap();
+            let output_format = value_t!(c.value_of(OUTPUT_FORMAT_ARG), FormatType).unwrap();
+            let raw_key = read_key_data(c)?;
+            let raw_input = read_input(c)?;
+            let raw_output = encrypt(
+                algo_type,
+                key_format,
+                input_format,
+                output_format,
+                &raw_key,
+                &raw_input,
+            )?;
+            write_output(c, &raw_output)
         }
 
-        (DECRYPT_CMD, Some(cmd_matches)) => {
-            let input = read_input(cmd_matches)?;
-            let key_data = read_key_data(cmd_matches)?;
-            let key_data = key_format.unpack(&key_data)?;
-            let output = algo.decrypt_data(&key_data, &input)?;
-            let output_format = read_format(cmd_matches, OUTPUT_FORMAT_ARG)?;
-            let output = output_format.pack(&output)?;
-            write_output(cmd_matches, &output)
+        (DECRYPT_CMD, Some(c)) => {
+            let input_format = value_t!(c.value_of(INPUT_FORMAT_ARG), FormatType).unwrap();
+            let output_format = value_t!(c.value_of(OUTPUT_FORMAT_ARG), FormatType).unwrap();
+            let raw_key = read_key_data(c)?;
+            let raw_input = read_input(c)?;
+            let raw_output = decrypt(
+                algo_type,
+                key_format,
+                input_format,
+                output_format,
+                &raw_key,
+                &raw_input,
+            )?;
+            write_output(c, &raw_output)
         }
 
-        (GEN_KEY_CMD, Some(cmd_matches)) => {
-            let output = algo.generate_key_data();
-            let output = key_format.pack(&output)?;
-            write_output(cmd_matches, &output)
+        (GEN_KEY_CMD, Some(c)) => {
+            let raw_key = generate_key(algo_type, key_format)?;
+            write_output(c, &raw_key)
         }
 
         ("", None) => Err(CliError::NoCommand),
@@ -245,11 +239,6 @@ fn body() -> Result<(), CliError> {
     }
 }
 
-fn read_format(m: &ArgMatches, arg: &str) -> Result<Box<dyn Format>, CliError> {
-    let format_type = value_t!(m.value_of(arg), FormatType).unwrap();
-    let format = select_format(format_type)?;
-    Ok(format)
-}
 
 fn main() {
     body().unwrap()

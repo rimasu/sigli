@@ -5,7 +5,7 @@ use convert_base::Convert;
 pub struct SignalFormat {}
 
 impl Format for SignalFormat {
-    fn pack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
+    fn pack(&self, input: &[u8]) -> Vec<u8> {
         let mut convert = Convert::new(256,26);
         let mut output = Vec::new();
         for (idx, point) in convert.convert::<u8, u8>(input).iter().enumerate() {
@@ -20,7 +20,7 @@ impl Format for SignalFormat {
             output.push(point + 65);
         }
         output.push(10);
-        return Ok(output)
+        output
     }
 
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
@@ -71,7 +71,7 @@ mod test {
     #[test]
     fn can_pack_any_byte() {
         let raw = all_bytes_unpacked();
-        let packed = SignalFormat {}.pack(&raw).unwrap();
+        let packed = SignalFormat {}.pack(&raw);
         assert_eq!(all_bytes_packed(), packed);
     }
 

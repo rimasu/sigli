@@ -8,7 +8,7 @@ static PLAIN_ALPHABET: &str = "abcdefghijklmnopqrstuvwxyz09123456789 ,.";
 
 impl Format for Plain1Format {
 
-    fn pack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
+    fn pack(&self, input: &[u8]) -> Vec<u8> {
         let mut lookup = HashMap::new();
         for (idx, c) in PLAIN_ALPHABET.chars().enumerate() {
             lookup.insert( idx as u8, c);
@@ -20,8 +20,7 @@ impl Format for Plain1Format {
             output.push(*lookup.get(&point).unwrap())
         }
         output.push('\n');
-
-        Ok(output.as_bytes().to_vec())
+        output.as_bytes().to_vec()
     }
 
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
