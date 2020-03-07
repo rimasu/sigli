@@ -23,8 +23,7 @@ impl Format for HexFormat {
     }
 
     fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
-        let text = std::str::from_utf8(input)
-            .map_err(|_| FormatError::MalformedInput)?;
+        let text = std::str::from_utf8(input).map_err(|_| FormatError::MalformedInput)?;
 
         let mut clean_text = String::with_capacity(text.len());
         for c in text.chars() {
@@ -35,9 +34,7 @@ impl Format for HexFormat {
             }
         }
 
-
-        hex::decode(clean_text)
-            .map_err(|_| FormatError::MalformedInput)
+        hex::decode(clean_text).map_err(|_| FormatError::MalformedInput)
     }
 }
 

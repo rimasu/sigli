@@ -1,15 +1,14 @@
-mod plain1;
 mod hex;
-mod signal;
+mod plain1;
 mod raw;
+mod signal;
 
-use plain1::Plain1Format;
 use self::hex::HexFormat;
-use signal::SignalFormat;
+use plain1::Plain1Format;
 use raw::RawFormat;
+use signal::SignalFormat;
 
 use std::str::FromStr;
-
 
 const PLAIN1_NAME: &str = "plain1";
 const HEX_NAME: &str = "hex";
@@ -20,7 +19,8 @@ pub const DEFAULT_KEY_FORMAT: &str = HEX_NAME;
 pub const DEFAULT_PLAIN_FORMAT: &str = PLAIN1_NAME;
 pub const DEFAULT_CIPHER_FORMAT: &str = SIGNAL_NAME;
 
-pub static ALL_FORMAT_NAMES: &'static [&'static str] = &[PLAIN1_NAME, HEX_NAME, SIGNAL_NAME, RAW_NAME];
+pub static ALL_FORMAT_NAMES: &'static [&'static str] =
+    &[PLAIN1_NAME, HEX_NAME, SIGNAL_NAME, RAW_NAME];
 
 // Key format names does not include PLAIN1 because it has meaningful whitespace
 // and is therefore not a robust way of passing keys around.
@@ -48,7 +48,7 @@ impl FromStr for FormatType {
 
 #[derive(Debug)]
 pub enum FormatError {
-    MalformedInput
+    MalformedInput,
 }
 
 pub trait Format {

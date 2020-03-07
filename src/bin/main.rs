@@ -1,24 +1,13 @@
 use clap::{value_t, App, Arg, ArgMatches, SubCommand};
 use std::fs::File;
-use std::io::{Read, Write};
 use std::io;
+use std::io::{Read, Write};
 
 use sigli::{
-    generate_key,
-    encrypt,
-    decrypt,
-    SigliError,
-    AlgoType,
-    FormatType,
-    ALL_FORMAT_NAMES,
-    KEY_FORMAT_NAMES,
-    DEFAULT_KEY_FORMAT,
-    DEFAULT_PLAIN_FORMAT,
-    DEFAULT_CIPHER_FORMAT,
-    ALGORITHM_NAMES,
-    DEFAULT_ALGO_NAME
+    decrypt, encrypt, generate_key, AlgoType, FormatType, SigliError, ALGORITHM_NAMES,
+    ALL_FORMAT_NAMES, DEFAULT_ALGO_NAME, DEFAULT_CIPHER_FORMAT, DEFAULT_KEY_FORMAT,
+    DEFAULT_PLAIN_FORMAT, KEY_FORMAT_NAMES,
 };
-
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -38,15 +27,18 @@ enum CliError {
     SigliError(SigliError),
     NoCommand,
     Io(io::Error),
-
 }
 
 impl std::convert::From<SigliError> for CliError {
-    fn from(e: SigliError) -> Self {  CliError::SigliError(e) }
+    fn from(e: SigliError) -> Self {
+        CliError::SigliError(e)
+    }
 }
 
 impl std::convert::From<io::Error> for CliError {
-    fn from(e: io::Error) -> Self {  CliError::Io(e) }
+    fn from(e: io::Error) -> Self {
+        CliError::Io(e)
+    }
 }
 
 fn read_file(file_name: &str) -> Result<Vec<u8>, CliError> {
@@ -95,7 +87,6 @@ fn write_output(c: &ArgMatches, data: &[u8]) -> Result<(), CliError> {
         write_stdout(&data)
     }
 }
-
 
 fn body() -> Result<(), CliError> {
     let m = App::new("Cipher CLI")
@@ -199,7 +190,6 @@ fn body() -> Result<(), CliError> {
             )
         ).get_matches();
 
-
     let algo_type = value_t!(m.value_of(ALGO_ARG), AlgoType).unwrap();
     let key_format = value_t!(m.value_of(KEY_FORMAT_ARG), FormatType).unwrap();
 
@@ -245,7 +235,6 @@ fn body() -> Result<(), CliError> {
         _ => unreachable!(),
     }
 }
-
 
 fn main() {
     body().unwrap()
