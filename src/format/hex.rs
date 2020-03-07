@@ -2,6 +2,8 @@ use super::{Format, FormatError};
 
 pub struct HexFormat {}
 
+pub const FORMAT_NAME: &str = "hex";
+
 impl Format for HexFormat {
     fn pack(&self, input: &[u8]) -> Vec<u8> {
         let mut key_text = String::new();

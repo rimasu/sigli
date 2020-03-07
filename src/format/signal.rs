@@ -4,6 +4,8 @@ use convert_base::Convert;
 
 pub struct SignalFormat {}
 
+pub const FORMAT_NAME: &str = "signal";
+
 impl Format for SignalFormat {
     fn pack(&self, input: &[u8]) -> Vec<u8> {
         let mut convert = Convert::new(256, 26);

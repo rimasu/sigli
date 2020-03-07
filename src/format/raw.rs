@@ -2,6 +2,8 @@ use crate::format::{Format, FormatError};
 
 pub struct RawFormat {}
 
+pub const FORMAT_NAME: &str = "raw";
+
 impl Format for RawFormat {
     fn pack(&self, input: &[u8]) -> Vec<u8> {
         let mut result = Vec::with_capacity(input.len());

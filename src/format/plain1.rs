@@ -4,6 +4,8 @@ use std::collections::HashMap;
 
 pub struct Plain1Format {}
 
+pub const FORMAT_NAME: &str = "plain1";
+
 static PLAIN_ALPHABET: &str = "abcdefghijklmnopqrstuvwxyz09123456789 ,.";
 
 impl Format for Plain1Format {

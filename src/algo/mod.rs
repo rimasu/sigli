@@ -3,14 +3,14 @@ use rand::{thread_rng, RngCore};
 mod aes128gcm;
 mod aes256gcm;
 
-use aes128gcm::Aes128GcmAlgorithm;
-use aes256gcm::Aes256GcmAlgorithm;
 use std::str::FromStr;
 
-pub const AES256GCM_NAME: &str = "aes256gcm";
-pub const AES128GCM_NAME: &str = "aes128gcm";
-pub const DEFAULT_ALGO_NAME: &str = AES256GCM_NAME;
-pub static ALGORITHM_NAMES: &'static [&'static str] = &[AES128GCM_NAME, AES256GCM_NAME];
+pub const DEFAULT_ALGO_NAME: &str = aes256gcm::ALGO_NAME;
+
+pub static ALGORITHM_NAMES: &'static [&'static str] = &[
+    aes256gcm::ALGO_NAME,
+    aes128gcm::ALGO_NAME,
+];
 
 pub enum AlgoType {
     Aes128Gcm,
@@ -21,8 +21,8 @@ impl FromStr for AlgoType {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            AES128GCM_NAME => Ok(AlgoType::Aes128Gcm),
-            AES256GCM_NAME => Ok(AlgoType::Aes256Gcm),
+            aes128gcm::ALGO_NAME => Ok(AlgoType::Aes128Gcm),
+            aes256gcm::ALGO_NAME => Ok(AlgoType::Aes256Gcm),
             _ => Err("no match"),
         }
     }
@@ -44,8 +44,8 @@ pub trait Algorithm {
 
 pub fn select_algorithm(name: AlgoType) -> Result<Box<dyn Algorithm>, AlgoError> {
     match name {
-        AlgoType::Aes256Gcm => Ok(Box::new(Aes256GcmAlgorithm {})),
-        AlgoType::Aes128Gcm => Ok(Box::new(Aes128GcmAlgorithm {})),
+        AlgoType::Aes256Gcm => Ok(Box::new(aes256gcm::Aes256GcmAlgorithm {})),
+        AlgoType::Aes128Gcm => Ok(Box::new(aes128gcm::Aes128GcmAlgorithm {})),
     }
 }
 

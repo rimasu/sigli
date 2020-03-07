@@ -6,6 +6,8 @@ use super::{generate_256_bit_key_data, AlgoError, Algorithm};
 
 pub struct Aes256GcmAlgorithm {}
 
+pub const ALGO_NAME: &str = "aes256gcm";
+
 impl Aes256GcmAlgorithm {
     fn create_cipher(key: &[u8]) -> Result<Aes256Gcm, AlgoError> {
         let mut key_data = [0u8; 32];

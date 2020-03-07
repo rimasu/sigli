@@ -6,6 +6,8 @@ use super::{generate_128_bit_key_data, AlgoError, Algorithm};
 
 pub struct Aes128GcmAlgorithm {}
 
+pub const ALGO_NAME: &str = "aes128gcm";
+
 impl Aes128GcmAlgorithm {
     fn create_cipher(key: &[u8]) -> Result<Aes128Gcm, AlgoError> {
         let mut key_data = [0u8; 16];
