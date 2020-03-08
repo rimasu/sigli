@@ -7,6 +7,11 @@ latest cryptographic primitives while still generating
 nice human readable inputs and outputs. These should make it easier
 to pass the key and cipher information by hand or over the phone.
 
+**Fair warning - this has been written as learning exercise and is
+not recommend for any real use at this stage.** 
+Feedback welcome.
+
+
 The following example generates a new key, encrypts and
 then decrypts a short message.
 ```bash
