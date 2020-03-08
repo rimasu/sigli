@@ -9,7 +9,7 @@ use sigli::{
     DEFAULT_PLAIN_FORMAT, KEY_FORMAT_NAMES,
 };
 
-const VERSION: &    str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const GEN_KEY_CMD: &str = "genkey";
 const ENCRYPT_CMD: &str = "encrypt";
@@ -20,7 +20,7 @@ const OUTPUT_ARG: &str = "output";
 const KEY_FILE_ARG: &str = "keyfile";
 const KEY_FORMAT_ARG: &str = "keyformat";
 const INPUT_FORMAT_ARG: &str = "inputformat";
-const OUTPUT_FORMAT_ARG: & str = "outputformat";
+const OUTPUT_FORMAT_ARG: &str = "outputformat";
 
 #[derive(Debug)]
 enum CliError {

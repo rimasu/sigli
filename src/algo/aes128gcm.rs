@@ -43,13 +43,12 @@ impl Algorithm for Aes128GcmAlgorithm {
 
         data.truncate(body_len);
         cipher
-            .decrypt_in_place(GenericArray::from_slice(&nonce), &[],data)
+            .decrypt_in_place(GenericArray::from_slice(&nonce), &[], data)
             .map_err(|_| AlgoError::DecryptionFailed)?;
 
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -78,10 +77,7 @@ mod test {
         #[test]
         fn generates_different_keys() {
             let algo = Aes128GcmAlgorithm {};
-            assert_ne!(
-                algo.generate_key_data(),
-                algo.generate_key_data(),
-            )
+            assert_ne!(algo.generate_key_data(), algo.generate_key_data(),)
         }
 
         #[test]
@@ -96,5 +92,3 @@ mod test {
         }
     }
 }
-
-

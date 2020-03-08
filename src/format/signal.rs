@@ -25,7 +25,6 @@ fn clean_buffer(buf: &mut Vec<u8>) -> Result<(), FormatError> {
 
 impl Format for SignalFormat {
     fn unpack_input(&self, input: &mut Vec<u8>) -> Result<(), FormatError> {
-
         clean_buffer(input)?;
 
         let mut convert = Convert::new(26, 256);

@@ -38,7 +38,6 @@ impl Format for Plain1Format {
         Ok(())
     }
 
-
     fn pack_output(&self, output: &mut Vec<u8>) {
         let mut lookup = HashMap::new();
         for (idx, c) in PLAIN_ALPHABET.chars().enumerate() {
@@ -61,7 +60,7 @@ mod test {
     fn all_bytes_unpacked() -> Vec<u8> {
         vec![
             168, 186, 91, 207, 48, 190, 246, 166, 32, 30, 39, 12, 102, 40, 77, 101, 112, 232, 61,
-            55, 138, 173, 223, 183, 55, 94, 29
+            55, 138, 173, 223, 183, 55, 94, 29,
         ]
     }
 

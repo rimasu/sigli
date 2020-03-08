@@ -5,7 +5,6 @@ pub struct HexFormat {}
 pub const FORMAT_NAME: &str = "hex";
 
 impl Format for HexFormat {
-
     fn unpack_input(&self, input: &mut Vec<u8>) -> Result<(), FormatError> {
         let text = std::str::from_utf8(input).map_err(|_| FormatError::MalformedInput)?;
 
@@ -19,9 +18,7 @@ impl Format for HexFormat {
         }
 
         input.clear();
-        input.extend_from_slice(
-            &hex::decode(clean_text).map_err(|_| FormatError::MalformedInput)?
-        );
+        input.extend_from_slice(&hex::decode(clean_text).map_err(|_| FormatError::MalformedInput)?);
         Ok(())
     }
 
