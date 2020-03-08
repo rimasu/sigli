@@ -1,5 +1,7 @@
 # Sigli: Signal Command Line Cryptography
 
+![Rust](https://github.com/rimasu/sigli/workflows/Rust/badge.svg)
+
 Designed for encrypting and decrypting short messages using
 latest cryptographic primitives while still generating
 nice human readable inputs and outputs. These should make it easier
