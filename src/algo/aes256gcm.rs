@@ -8,9 +8,18 @@ pub struct Aes256GcmAlgorithm {}
 
 pub const ALGO_NAME: &str = "aes256gcm";
 
+const KEY_NUM_BYTES: usize = 32;
+
 impl Aes256GcmAlgorithm {
     fn create_cipher(key: &[u8]) -> Result<Aes256Gcm, AlgoError> {
-        let mut key_data = [0u8; 32];
+        if key.len() != KEY_NUM_BYTES {
+            return Err(AlgoError::KeyWrongLength {
+                expected_length: KEY_NUM_BYTES,
+                actual_length: key.len(),
+            });
+        };
+
+        let mut key_data = [0u8; KEY_NUM_BYTES];
         key_data.copy_from_slice(key);
         Ok(Aes256Gcm::new(GenericArray::clone_from_slice(&key_data)))
     }
@@ -73,7 +82,7 @@ mod test {
     #[test]
     fn generates_different_keys() {
         let algo = Aes256GcmAlgorithm {};
-        assert_ne!(algo.generate_key_data(), algo.generate_key_data(),)
+        assert_ne!(algo.generate_key_data(), algo.generate_key_data(), )
     }
 
     #[test]
@@ -85,5 +94,23 @@ mod test {
         algo.encrypt_data(&key, &mut data1).unwrap();
         algo.encrypt_data(&key, &mut data2).unwrap();
         assert_ne!(data1, data2)
+    }
+
+    #[test]
+    fn can_not_use_wrong_length_key() {
+        let algo = Aes256GcmAlgorithm {};
+        let mut data = raw_data();
+        let key = &[0u8; 31];
+
+        let result = algo.encrypt_data(key, &mut data).unwrap_err();
+
+        assert_eq!(
+            AlgoError::KeyWrongLength {
+                expected_length: 32,
+                actual_length: 31
+            },
+            result
+        )
+
     }
 }

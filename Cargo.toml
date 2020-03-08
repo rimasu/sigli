@@ -4,8 +4,11 @@ version = "0.1.0"
 authors = ["Richard Sunderland <dev@sunderlandfamily.info>"]
 edition = "2018"
 description="Cryptographic command line interface with emphasis on short messages"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+categories = ["cryptography", "cli"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rimasu/sigli"
+homepage = "https://github.com/rimasu/sigli"
+documentation = "https://github.com/rimasu/sigli"
 
 [dependencies]
 clap = "2.33.0"

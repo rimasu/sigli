@@ -4,7 +4,7 @@ use convert_base::Convert;
 
 pub struct SignalFormat {}
 
-pub const FORMAT_NAME: &str = "signal";
+pub const FORMAT_NAME: &str = "signal1";
 
 fn clean_buffer(buf: &mut Vec<u8>) -> Result<(), FormatError> {
     let mut write_pos = 0;

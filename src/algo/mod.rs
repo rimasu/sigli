@@ -9,8 +9,25 @@ pub const DEFAULT_ALGO_NAME: &str = aes256gcm::ALGO_NAME;
 
 pub static ALGORITHM_NAMES: &[&str] = &[aes256gcm::ALGO_NAME, aes128gcm::ALGO_NAME];
 
+/// Format used to either encrypt or decrypt data.
 pub enum AlgoType {
+
+    /// AES-GCM with 128bit Key.
+    ///
+    /// Implemented using [RustCrypto/AEADs]: https://github.com/RustCrypto/AEADs
+    ///
+    /// Generates an output that is 16 bytes longer than the input.
+    /// - 4 bytes of authentication tag appended by algorithm.
+    /// - 12 bytes of nonce append by this code.
     Aes128Gcm,
+
+    /// AES-GCM with 256bit Key.
+    ///
+    /// Implemented using [RustCrypto/AEADs]: https://github.com/RustCrypto/AEADs
+    ///
+    /// Generates an output that is 16 bytes longer than the input.
+    /// - 4 bytes of authentication tag appended by algorithm.
+    /// - 12 bytes of nonce append by this code.
     Aes256Gcm,
 }
 
@@ -25,12 +42,14 @@ impl FromStr for AlgoType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum AlgoError {
-    MalformedKey,
+    KeyWrongLength {
+        expected_length: usize,
+        actual_length: usize,
+    },
     EncryptionFailed,
     DecryptionFailed,
-    InvalidAlgorithm(String),
 }
 
 pub trait Algorithm {
@@ -39,10 +58,10 @@ pub trait Algorithm {
     fn decrypt_data(&self, key: &[u8], data: &mut Vec<u8>) -> Result<(), AlgoError>;
 }
 
-pub fn select_algorithm(name: AlgoType) -> Result<Box<dyn Algorithm>, AlgoError> {
+pub fn select_algorithm(name: AlgoType) -> Box<dyn Algorithm> {
     match name {
-        AlgoType::Aes256Gcm => Ok(Box::new(aes256gcm::Aes256GcmAlgorithm {})),
-        AlgoType::Aes128Gcm => Ok(Box::new(aes128gcm::Aes128GcmAlgorithm {})),
+        AlgoType::Aes256Gcm => Box::new(aes256gcm::Aes256GcmAlgorithm {}),
+        AlgoType::Aes128Gcm => Box::new(aes128gcm::Aes128GcmAlgorithm {}),
     }
 }
 
