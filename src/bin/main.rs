@@ -197,33 +197,33 @@ fn body() -> Result<(), CliError> {
         (ENCRYPT_CMD, Some(c)) => {
             let input_format = value_t!(c.value_of(INPUT_FORMAT_ARG), FormatType).unwrap();
             let output_format = value_t!(c.value_of(OUTPUT_FORMAT_ARG), FormatType).unwrap();
-            let raw_key = read_key_data(c)?;
-            let raw_input = read_input(c)?;
-            let raw_output = encrypt(
+            let mut raw_key = read_key_data(c)?;
+            let mut data = read_input(c)?;
+            encrypt(
                 algo_type,
                 key_format,
                 input_format,
                 output_format,
-                &raw_key,
-                &raw_input,
+                &mut raw_key,
+                &mut data,
             )?;
-            write_output(c, &raw_output)
+            write_output(c, &data)
         }
 
         (DECRYPT_CMD, Some(c)) => {
             let input_format = value_t!(c.value_of(INPUT_FORMAT_ARG), FormatType).unwrap();
             let output_format = value_t!(c.value_of(OUTPUT_FORMAT_ARG), FormatType).unwrap();
-            let raw_key = read_key_data(c)?;
-            let raw_input = read_input(c)?;
-            let raw_output = decrypt(
+            let mut raw_key = read_key_data(c)?;
+            let mut data = read_input(c)?;
+            decrypt(
                 algo_type,
                 key_format,
                 input_format,
                 output_format,
-                &raw_key,
-                &raw_input,
+                &mut raw_key,
+                &mut data,
             )?;
-            write_output(c, &raw_output)
+            write_output(c, &data)
         }
 
         (GEN_KEY_CMD, Some(c)) => {

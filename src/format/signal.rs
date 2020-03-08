@@ -6,8 +6,36 @@ pub struct SignalFormat {}
 
 pub const FORMAT_NAME: &str = "signal";
 
+fn clean_buffer(buf: &mut Vec<u8>) -> Result<(), FormatError> {
+    let mut write_pos = 0;
+    for read_pos in 0..buf.len() {
+        let point = buf[read_pos];
+        match point {
+            65..=90 => {
+                buf[write_pos] = point - 65;
+                write_pos += 1;
+            }
+            10 | 13 | 32 => {}
+            _ => return Err(FormatError::MalformedInput),
+        }
+    }
+    buf.truncate(write_pos);
+    Ok(())
+}
+
 impl Format for SignalFormat {
-    fn pack(&self, output: &mut Vec<u8>) {
+    fn unpack_input(&self, input: &mut Vec<u8>) -> Result<(), FormatError> {
+
+        clean_buffer(input)?;
+
+        let mut convert = Convert::new(26, 256);
+        let buf = convert.convert::<u8, u8>(input);
+        input.clear();
+        input.extend_from_slice(&buf);
+        Ok(())
+    }
+
+    fn pack_output(&self, output: &mut Vec<u8>) {
         let mut convert = Convert::new(256, 26);
         let buf = convert.convert::<u8, u8>(output);
 
@@ -24,19 +52,6 @@ impl Format for SignalFormat {
             output.push(point + 65);
         }
         output.push(10);
-    }
-
-    fn unpack(&self, input: &[u8]) -> Result<Vec<u8>, FormatError> {
-        let mut buf = Vec::with_capacity(input.len());
-        for point in input {
-            match point {
-                65..=90 => buf.push(point - 65),
-                10 | 13 | 32 => {}
-                _ => return Err(FormatError::MalformedInput),
-            }
-        }
-        let mut convert = Convert::new(26, 256);
-        Ok(convert.convert::<u8, u8>(&buf))
     }
 }
 
@@ -75,14 +90,14 @@ mod test {
     #[test]
     fn can_pack_any_byte() {
         let mut output = all_bytes_unpacked();
-        SignalFormat {}.pack(&mut output);
+        SignalFormat {}.pack_output(&mut output);
         assert_eq!(all_bytes_packed(), output);
     }
 
     #[test]
     fn can_unpack_any_byte_with_whitespace() {
-        let raw = all_bytes_packed();
-        let unpacked = SignalFormat {}.unpack(&raw).unwrap();
-        assert_eq!(all_bytes_unpacked(), unpacked)
+        let mut input = all_bytes_packed();
+        SignalFormat {}.unpack_input(&mut input).unwrap();
+        assert_eq!(all_bytes_unpacked(), input)
     }
 }

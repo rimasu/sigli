@@ -32,7 +32,7 @@ impl std::convert::From<FormatError> for SigliError {
 pub fn generate_key(algo_type: AlgoType, key_format: FormatType) -> Result<Vec<u8>, SigliError> {
     let mut key = select_algorithm(algo_type).map(|a| a.generate_key_data())?;
 
-    select_format(key_format).map(|f| f.pack(&mut key))?;
+    select_format(key_format).map(|f| f.pack_output(&mut key))?;
 
     Ok(key)
 }
@@ -42,18 +42,22 @@ pub fn encrypt(
     key_format: FormatType,
     input_format: FormatType,
     output_format: FormatType,
-    raw_key: &[u8],
-    raw_input: &[u8],
-) -> Result<Vec<u8>, SigliError> {
-    let key = select_format(key_format).and_then(|f| f.unpack(raw_key))?;
+    key: &mut Vec<u8>,
+    data: &mut Vec<u8>,
+) -> Result<(), SigliError> {
+    select_format(key_format)
+        .and_then(|f| f.unpack_input(key))?;
 
-    let mut data = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
+    select_format(input_format)
+        .and_then(|f| f.unpack_input(data))?;
 
-    select_algorithm(algo_type).and_then(|a| a.encrypt_data(&key, &mut data))?;
+    select_algorithm(algo_type)
+        .and_then(|a| a.encrypt_data(key, data))?;
 
-    select_format(output_format).map(|f| f.pack(&mut data))?;
+    select_format(output_format)
+        .map(|f| f.pack_output(data))?;
 
-    Ok(data)
+    Ok(())
 }
 
 pub fn decrypt(
@@ -61,17 +65,21 @@ pub fn decrypt(
     key_format: FormatType,
     input_format: FormatType,
     output_format: FormatType,
-    raw_key: &[u8],
-    raw_input: &[u8],
-) -> Result<Vec<u8>, SigliError> {
-    let key = select_format(key_format).and_then(|f| f.unpack(raw_key))?;
+    key: &mut Vec<u8>,
+    data: &mut Vec<u8>,
+) -> Result<(), SigliError> {
+    select_format(key_format)
+        .and_then(|f| f.unpack_input(key))?;
 
-    let mut data = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
+    select_format(input_format)
+        .and_then(|f| f.unpack_input(data))?;
 
-    select_algorithm(algo_type).and_then(|a| a.decrypt_data(&key, &mut data))?;
+    select_algorithm(algo_type)
+        .and_then(|a| a.decrypt_data(key, data))?;
 
-    select_format(output_format).map(|f| f.pack(&mut data))?;
+    select_format(output_format)
+        .map(|f| f.pack_output(data))?;
 
-    Ok(data)
+    Ok(())
 }
 
