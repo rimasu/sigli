@@ -38,8 +38,8 @@ pub enum AlgoError {
 
 pub trait Algorithm {
     fn generate_key_data(&self) -> Vec<u8>;
-    fn encrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, AlgoError>;
-    fn decrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, AlgoError>;
+    fn encrypt_data(&self, key: &[u8], data: &mut Vec<u8>) -> Result<(), AlgoError>;
+    fn decrypt_data(&self, key: &[u8], data: &mut Vec<u8>) -> Result<(), AlgoError>;
 }
 
 pub fn select_algorithm(name: AlgoType) -> Result<Box<dyn Algorithm>, AlgoError> {

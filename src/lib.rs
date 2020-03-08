@@ -47,13 +47,13 @@ pub fn encrypt(
 ) -> Result<Vec<u8>, SigliError> {
     let key = select_format(key_format).and_then(|f| f.unpack(raw_key))?;
 
-    let input = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
+    let mut data = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
 
-    let mut output = select_algorithm(algo_type).and_then(|a| a.encrypt_data(&key, &input))?;
+    select_algorithm(algo_type).and_then(|a| a.encrypt_data(&key, &mut data))?;
 
-    select_format(output_format).map(|f| f.pack(&mut output))?;
+    select_format(output_format).map(|f| f.pack(&mut data))?;
 
-    Ok(output)
+    Ok(data)
 }
 
 pub fn decrypt(
@@ -66,12 +66,12 @@ pub fn decrypt(
 ) -> Result<Vec<u8>, SigliError> {
     let key = select_format(key_format).and_then(|f| f.unpack(raw_key))?;
 
-    let input = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
+    let mut data = select_format(input_format).and_then(|f| f.unpack(raw_input))?;
 
-    let mut output = select_algorithm(algo_type).and_then(|a| a.decrypt_data(&key, &input))?;
+    select_algorithm(algo_type).and_then(|a| a.decrypt_data(&key, &mut data))?;
 
-    select_format(output_format).map(|f| f.pack(&mut output))?;
+    select_format(output_format).map(|f| f.pack(&mut data))?;
 
-    Ok(output)
+    Ok(data)
 }
 

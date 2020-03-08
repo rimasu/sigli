@@ -46,7 +46,7 @@ mod test {
     #[test]
     fn can_pack_hex_input() {
         let mut output  = vec![0xAB, 0x01, 0x02, 0x22, 0x23, 0x43];
-        HexFormat {}.pack(&mut &output);
+        HexFormat {}.pack(&mut output);
         assert_eq!("AB01-0222-2343\n".as_bytes().to_vec(), output);
     }
 

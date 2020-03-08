@@ -21,31 +21,32 @@ impl Algorithm for Aes256GcmAlgorithm {
         generate_256_bit_key_data()
     }
 
-    fn encrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, AlgoError> {
-        let cipher = Self::create_cipher(&key)?;
+    fn encrypt_data(&self, key: &[u8], data: &mut Vec<u8>) -> Result<(), AlgoError> {
+        let cipher = Self::create_cipher(key)?;
         let mut nonce = [0u8; 12];
         thread_rng().fill_bytes(&mut nonce);
 
-        let mut output = Vec::with_capacity(input.len() + 16);
-        output.extend_from_slice(input);
-
         cipher
-            .encrypt_in_place(GenericArray::from_slice(&nonce), &[], &mut output)
+            .encrypt_in_place(GenericArray::from_slice(&nonce), &[], data)
             .map_err(|_| AlgoError::EncryptionFailed)?;
 
-        output.extend_from_slice(&nonce);
+        data.extend_from_slice(&nonce);
 
-        Ok(output)
+        Ok(())
     }
 
-    fn decrypt_data(&self, key: &[u8], input: &[u8]) -> Result<Vec<u8>, AlgoError> {
+    fn decrypt_data(&self, key: &[u8], data: &mut Vec<u8>) -> Result<(), AlgoError> {
         let cipher = Self::create_cipher(&key)?;
-        let body_len = input.len() - 12;
-        let nonce = &input[body_len..];
-        let body = &input[..body_len];
+        let body_len = data.len() - 12;
+        let mut nonce = [0u8; 12];
+        nonce.copy_from_slice(&data[body_len..]);
+
+        data.truncate(body_len);
         cipher
-            .decrypt(GenericArray::from_slice(&nonce), body)
-            .map_err(|_| AlgoError::DecryptionFailed)
+            .decrypt_in_place(GenericArray::from_slice(&nonce),&[], data)
+            .map_err(|_| AlgoError::DecryptionFailed)?;
+
+        Ok(())
     }
 }
 
@@ -54,14 +55,20 @@ impl Algorithm for Aes256GcmAlgorithm {
 mod test {
     use super::*;
 
+    fn raw_data() -> Vec<u8> {
+        vec![0xAB, 0x01, 0x02, 0x22, 0x23, 0x43]
+    }
+
     #[test]
     fn can_round_trip() {
         let algo = Aes256GcmAlgorithm {};
-        let input = vec![0xAB, 0x01, 0x02, 0x22, 0x23, 0x43];
         let key = algo.generate_key_data();
-        let output = algo.encrypt_data(&key, &input).unwrap();
-        assert_ne!(input, output);
-        assert_eq!(input, algo.decrypt_data(&key, &output).unwrap());
+        let mut data = raw_data();
+
+        algo.encrypt_data(&key, &mut data).unwrap();
+        assert_ne!(raw_data(), data);
+        algo.decrypt_data(&key, &mut data).unwrap();
+        assert_eq!(raw_data(), data);
     }
 
     #[test]
@@ -76,11 +83,11 @@ mod test {
     #[test]
     fn encrypting_twice_generates_different_cipher_texts() {
         let algo = Aes256GcmAlgorithm {};
-        let input = vec![0xAB, 0x01, 0x02, 0x22, 0x23, 0x43];
+        let mut data1 = raw_data();
+        let mut data2 = raw_data();
         let key = algo.generate_key_data();
-        assert_ne!(
-            algo.encrypt_data(&key, &input).unwrap(),
-            algo.encrypt_data(&key, &input).unwrap(),
-        )
+        algo.encrypt_data(&key, &mut data1).unwrap();
+        algo.encrypt_data(&key, &mut data2).unwrap();
+        assert_ne!(data1, data2)
     }
 }

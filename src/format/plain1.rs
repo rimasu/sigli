@@ -70,7 +70,7 @@ mod test {
     #[test]
     fn can_pack_any_byte() {
         let mut output = all_bytes_unpacked();
-        Plain1Format {}.pack(&mut raw);
+        Plain1Format {}.pack(&mut output);
         assert_eq!(all_letters_packed(), output);
     }
 
